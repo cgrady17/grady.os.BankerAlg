@@ -24,4 +24,6 @@ public interface Bank {
      * @return True/False indicating if the resources were granted.
      */
     boolean requestResources(int custNum, int[] request);
+
+    void releaseResources(int custNum, int[] release);
 }
