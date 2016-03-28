@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 import static java.lang.System.lineSeparator;
 
 /**
@@ -34,6 +36,13 @@ public class ImplBank implements Bank {
      */
     @Override
     public void addCustomer(int custNum, int[] maxDemand) {
+        // Check if the specified Customer Number is greater
+        // than the length of the maximum array
+        if (custNum > maximum.length) {
+            // Re-create the maximum array with an increased sizes
+            maximum = resizeCustomerArray(maximum, custNum);
+        }
+
         // Add the specified demand to the maximum array
         // at the specified customer number
         maximum[custNum] = maxDemand;
@@ -62,7 +71,7 @@ public class ImplBank implements Bank {
 
         sb.append(lineSeparator());
 
-        System.out.println(sb.toString());
+        System.out.println(sb);
     }
 
     /**
@@ -76,7 +85,83 @@ public class ImplBank implements Bank {
     public boolean requestResources(int custNum, int[] request) {
         logRequest();
 
-        return false;
+        for (int i = 0; i < request.length; i++) {
+            if (request[i] > available[i]) return false;
+
+            if (request[i] > maximum[custNum][i]) return false;
+        }
+
+        if (!safeState(custNum, request)) return false;
+
+        for (int i = 0; i < request.length; i++) {
+            available[i] -= request[i];
+            allocation[custNum][i] += request[i];
+        }
+
+        return true;
+    }
+
+    /**
+     * Indicates whether a state is safe.
+     * @param custNum The number of the Customer.
+     * @param request The request to check.
+     * @return Boolean indicating if the State is safe.
+     */
+    private boolean safeState(int custNum, int[] request) {
+        int[] clonedResources = available.clone();
+        int[][] clonedAllocation = allocation.clone();
+
+        // First check if any part of the request requires more resources than are available (unsafe state)
+        for (int i = 0; i < clonedResources.length; i++) {
+            if (request[i] > clonedResources[i]) {
+                return false;
+            }
+        }
+
+        // If we reach this point, the first request was valid so we execute it on the simulated resources
+        for (int i = 0; i < clonedResources.length; i++) {
+            clonedResources[i] -= request[i];
+            clonedAllocation[custNum][i] += request[i];
+        }
+
+        // Create new boolean array and set all to false
+        boolean[] canFinish = new boolean[numOfCustomers];
+
+        for (int i = 0; i < canFinish.length; i++) {
+            canFinish[i] = false;
+        }
+
+        // Now check if there is an order wherein other customers can still finish after us
+        for (int i = 0; i < numOfCustomers; i++) {
+            // Find a customer that can finish a request. Loop through all resources per customer
+            for (int j = 0; j < numOfCustomers; j++) {
+                if (!canFinish[j]) {
+                    for (int k = 0; k < clonedResources.length; k++) {
+                        // If the need (maxdemand - allocated = need) is noot bigger than the amount of available resources, thread can finish
+                        if (!((maximum[j][k] - clonedAllocation[j][k]) > clonedResources[k])) {
+                            canFinish[j] = true;
+                            for (int l = 0; l < clonedResources.length; l++) {
+                                clonedResources[l] += clonedAllocation[j][l];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // restore the value of need and allocation for this thread
+        for (int i = 0; i < available.length; i++) {
+            clonedAllocation[custNum][i] -= request[i];
+        }
+
+        // After all the previous calculations. Loop through the array and see if every customer could complete the transaction for their maximum demand
+        for (boolean aCanFinish : canFinish) {
+            if (!aCanFinish) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -107,5 +192,24 @@ public class ImplBank implements Bank {
         if (numOfRequests >= MAX_REQUESTS) {
             // @TODO Handle hitting request max
         }
+    }
+
+    /**
+     * Creates a new 2d array from the specified original with
+     * the specified new length. Useful for resizing 2d arrays, as
+     * the Arrays utility does not support such a feature.
+     * @param original The original 2d array to resize.
+     * @param newLength The length of the new resized array.
+     * @return A new, resized 2d array with the contents of the original.
+     */
+    private static int[][] resizeCustomerArray(int[][] original, int newLength) {
+        if (original == null) return null;
+
+        final int[][] result = new int[newLength][];
+        for (int i = 0; i < original.length; i++) {
+            result[i] = Arrays.copyOf(original[i], original[i].length);
+        }
+
+        return result;
     }
 }
