@@ -1,3 +1,5 @@
+import static java.lang.System.lineSeparator;
+
 /**
  * Implementation of the Bank interface of the
  * Banker's Algorithm.
@@ -6,6 +8,9 @@
  * @version 1.0
  */
 public class ImplBank implements Bank {
+    private static final int MAX_REQUESTS = 20; // The maxinum number of resource requests
+    int numOfRequests; // the number of resource requests
+
     int numOfCustomers; // The number of Customers
     int numOfResources; // The number of Resources
 
@@ -29,7 +34,9 @@ public class ImplBank implements Bank {
      */
     @Override
     public void addCustomer(int custNum, int[] maxDemand) {
-
+        // Add the specified demand to the maximum array
+        // at the specified customer number
+        maximum[custNum] = maxDemand;
     }
 
     /**
@@ -37,7 +44,25 @@ public class ImplBank implements Bank {
      */
     @Override
     public void getState() {
+        StringBuilder sb = new StringBuilder("Outputting State..." + lineSeparator());
 
+        sb.append("Resource Availability:").append(lineSeparator());
+        for (int i = 0; i < available.length; i++) {
+            sb.append("Resource ").append(i).append(": ").append(available[i]).append(lineSeparator());
+        }
+
+        sb.append(lineSeparator()).append("Customer Maximum Demand:").append(lineSeparator());
+        writeCustomerArray(maximum, sb);
+
+        sb.append(lineSeparator()).append("Customer Resource Allocation:").append(lineSeparator());
+        writeCustomerArray(allocation, sb);
+
+        sb.append(lineSeparator()).append("Customer Needs:").append(lineSeparator());
+        writeCustomerArray(need, sb);
+
+        sb.append(lineSeparator());
+
+        System.out.println(sb.toString());
     }
 
     /**
@@ -49,6 +74,38 @@ public class ImplBank implements Bank {
      */
     @Override
     public boolean requestResources(int custNum, int[] request) {
+        logRequest();
+
         return false;
+    }
+
+    /**
+     * Writes a two-dimensional array of Customer data to the
+     * specified StringBuilder.
+     * @param array 2D array containing the Customer data.
+     * @param sb StringBuilder object in which to write the output.
+     */
+    private void writeCustomerArray(int[][] array, StringBuilder sb) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == null || array[i].length == 0) continue;
+
+            sb.append("Customer ").append(i).append(":");
+
+            for (int k : array[i]) {
+                sb.append(" ").append(k);
+            }
+        }
+    }
+
+    /**
+     * Logs that a resource request was made and checks
+     * whether the request ceiling has been reached.
+     */
+    private void logRequest() {
+        numOfRequests++;
+
+        if (numOfRequests >= MAX_REQUESTS) {
+            // @TODO Handle hitting request max
+        }
     }
 }
