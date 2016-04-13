@@ -25,5 +25,10 @@ public interface Bank {
      */
     boolean requestResources(int custNum, int[] request);
 
+    /**
+     * Releases the specified resources for the specifiec Customer.
+     * @param custNum The number of the Customer whose resources are to be released.
+     * @param release The resources being released.
+     */
     void releaseResources(int custNum, int[] release);
 }

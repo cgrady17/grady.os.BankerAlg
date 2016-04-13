@@ -14,7 +14,6 @@ public class ImplBank implements Bank {
     private int numOfRequests; // the number of resource requests
 
     private int numOfCustomers = Customer.COUNT; // The number of Customers
-    int numOfResources; // The number of Resources
 
     // Array containing the amount of each resource available
     private int[] available;
@@ -24,9 +23,6 @@ public class ImplBank implements Bank {
 
     // 2d array containing the amount currently allocated to each Customer
     private int[][] allocation;
-
-    // 2d array containing the remaining needs of each Customer
-    private int[][] need;
 
     /**
      * Initializes a new instance of ImplBank with the specified
@@ -64,26 +60,6 @@ public class ImplBank implements Bank {
      */
     @Override
     public void getState() {
-        /*StringBuilder sb = new StringBuilder("Outputting State..." + lineSeparator());
-
-        sb.append("Resource Availability:").append(lineSeparator());
-        for (int i = 0; i < available.length; i++) {
-            sb.append("Resource ").append(i).append(": ").append(available[i]).append(lineSeparator());
-        }
-
-        sb.append(lineSeparator()).append("Customer Maximum Demand:").append(lineSeparator());
-        writeCustomerArray(maximum, sb);
-
-        sb.append(lineSeparator()).append("Customer Resource Allocation:").append(lineSeparator());
-        writeCustomerArray(allocation, sb);
-
-        sb.append(lineSeparator()).append("Customer Needs:").append(lineSeparator());
-        writeCustomerArray(need, sb);
-
-        sb.append(lineSeparator());
-
-        System.out.println(sb);*/
-
         StringBuilder sb = new StringBuilder();
 
         // Append available
@@ -106,7 +82,7 @@ public class ImplBank implements Bank {
         }
 
         // Append max
-        sb.append("\n\nMax demand:\n----------");
+        sb.append("\n\nMaximum Demand:\n----------");
         for(int i = 0; i < maximum.length; i++){
             sb.append("\nCustomer " + i + ": ");
 
@@ -219,12 +195,12 @@ public class ImplBank implements Bank {
             }
         }
 
-        // restore the value of need and allocation for this thread
+        // Restore the value of need and allocation for this thread
         for (int i = 0; i < available.length; i++) {
             clonedAllocation[custNum][i] -= request[i];
         }
 
-        // After all the previous calculations. Loop through the array and see if every customer could complete the transaction for their maximum demand
+        // After all the previous calculations, loop through the array and see if every customer could complete the transaction for their maximum demand
         for (boolean aCanFinish : canFinish) {
             if (!aCanFinish) {
                 return false;
@@ -258,7 +234,6 @@ public class ImplBank implements Bank {
      */
     private void logRequest() {
         if (numOfRequests >= MAX_REQUESTS) {
-            // @TODO Handle hitting request max
             Thread.currentThread().interrupt();
         }
 
